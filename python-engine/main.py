@@ -1,4 +1,5 @@
 import argparse
+import sys
 from scanners.port_scanner import scan_ports
 from scanners.sqli_fuzzer import fuzz_sqli
 from scanners.tls_checker import check_tls
@@ -23,16 +24,24 @@ def main():
         return
 
     findings = []
-    
-    findings.extend(scan_ports(args.url))
-    findings.extend(fuzz_sqli(args.url))
-    findings.extend(check_tls(args.url))
-    findings.extend(probe_routes(args.url))
-    findings.extend(check_sri(args.url))
-    findings.extend(detect_error_leaks(args.url))
-    findings.extend(probe_ssrf(args.url))
-    findings.extend(hunt_secrets(args.url))
-    findings.extend(check_components(args.url))
+
+    scanners = [
+        ("port_scanner", scan_ports),
+        ("sqli_fuzzer", fuzz_sqli),
+        ("tls_checker", check_tls),
+        ("route_prober", probe_routes),
+        ("sri_checker", check_sri),
+        ("error_leak_detector", detect_error_leaks),
+        ("ssrf_prober", probe_ssrf),
+        ("secret_hunter", hunt_secrets),
+        ("component_checker", check_components),
+    ]
+
+    for scanner_name, scanner in scanners:
+        try:
+            findings.extend(scanner(args.url))
+        except Exception as exc:
+            print(f"[{scanner_name}] failed: {exc}", file=sys.stderr)
     
     if args.output == 'json':
         OWASPMapper.output_json(findings)
