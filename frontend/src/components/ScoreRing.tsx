@@ -2,38 +2,84 @@ import React from 'react';
 
 interface ScoreRingProps {
   score: number;
+  size?: number;
+  strokeWidth?: number;
+  showLabel?: boolean;
 }
 
-export default function ScoreRing({ score }: ScoreRingProps) {
-  let color = 'text-red-500';
-  let stroke = 'stroke-red-500';
-  
+export default function ScoreRing({ score, size = 160, strokeWidth = 10, showLabel = true }: ScoreRingProps) {
+  const radius = (size - strokeWidth * 2) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (Math.max(0, Math.min(100, score)) / 100) * circumference;
+
+  let color: string;
+  let glow: string;
+  let label: string;
+
   if (score >= 80) {
-    color = 'text-green-500';
-    stroke = 'stroke-green-500';
+    color = '#34d399';
+    glow = 'rgba(52,211,153,0.4)';
+    label = 'Secure';
   } else if (score >= 50) {
-    color = 'text-yellow-500';
-    stroke = 'stroke-yellow-500';
+    color = '#fbbf24';
+    glow = 'rgba(251,191,36,0.4)';
+    label = 'At Risk';
+  } else {
+    color = '#f87171';
+    glow = 'rgba(248,113,113,0.4)';
+    label = 'Critical';
   }
 
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
+  const cx = size / 2;
+  const cy = size / 2;
 
   return (
-    <div className="relative flex items-center justify-center w-40 h-40">
-      <svg className="transform -rotate-90 w-full h-full">
-        <circle cx="80" cy="80" r="50" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-100" />
+    <div style={{ position: 'relative', width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <svg
+        width={size}
+        height={size}
+        style={{ transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0 }}
+      >
+        {/* Track */}
         <circle
-          cx="80" cy="80" r="50" stroke="currentColor" strokeWidth="8" fill="transparent"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          className={`${stroke} transition-all duration-1000 ease-out`}
+          cx={cx} cy={cy} r={radius}
+          stroke="rgba(255,255,255,0.06)"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        {/* Glow filter */}
+        <defs>
+          <filter id={`glow-${score}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        {/* Progress arc */}
+        <circle
+          cx={cx} cy={cy} r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="transparent"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          filter={`url(#glow-${score})`}
+          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)' }}
         />
       </svg>
-      <div className="absolute flex flex-col items-center">
-        <span className={`text-4xl font-black ${color}`}>{score}</span>
-        <span className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-1">Score</span>
-      </div>
+      {showLabel && (
+        <div style={{ textAlign: 'center', zIndex: 1 }}>
+          <div style={{ fontSize: size * 0.25, fontWeight: 900, color, lineHeight: 1, letterSpacing: '-0.03em' }}>
+            {score}
+          </div>
+          <div style={{ fontSize: size * 0.1, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 4 }}>
+            {label}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

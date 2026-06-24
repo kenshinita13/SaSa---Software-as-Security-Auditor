@@ -1,69 +1,164 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Key, UserSquare } from 'lucide-react';
+import { ShieldCheck, Key, UserSquare, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function AuthSelector() {
   const router = useRouter();
   const [method, setMethod] = useState<'jwt' | 'apikey'>('jwt');
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    // Simulate auth delay
+    await new Promise(r => setTimeout(r, 800));
     if (method === 'apikey') {
-      localStorage.setItem('sasa_api_key', 'sk_sasa_dummy_key');
+      localStorage.setItem('sasa_api_key', apiKey || 'sk_sasa_demo_key');
+    } else {
+      localStorage.setItem('sasa_auth_method', 'jwt');
     }
     router.push('/dashboard');
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-black text-indigo-600 tracking-tight">SaSa</h1>
-        <p className="text-gray-500 mt-2 font-medium">Software as Security Auditor</p>
+    <div style={{
+      width: '100%', maxWidth: 420,
+      background: 'rgba(14, 21, 41, 0.9)',
+      border: '1px solid var(--border)',
+      borderRadius: '1.25rem',
+      padding: '2.5rem',
+      backdropFilter: 'blur(24px)',
+      boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,102,241,0.1)',
+    }}>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <div style={{
+          width: 52, height: 52, margin: '0 auto 1rem',
+          background: 'linear-gradient(135deg, #6366f1, #818cf8)',
+          borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 24px rgba(99,102,241,0.5)',
+        }}>
+          <ShieldCheck size={24} color="#fff" />
+        </div>
+        <h1 style={{ fontWeight: 900, fontSize: '1.6rem', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>
+          SaSa
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+          Software as Security Auditor
+        </p>
       </div>
 
-      <div className="flex bg-gray-100 p-1 rounded-lg mb-8">
-        <button
-          onClick={() => setMethod('jwt')}
-          className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-md transition-all ${
-            method === 'jwt' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <UserSquare className="w-4 h-4 mr-2" /> User Login
-        </button>
-        <button
-          onClick={() => setMethod('apikey')}
-          className={`flex-1 flex items-center justify-center py-2 text-sm font-semibold rounded-md transition-all ${
-            method === 'apikey' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Key className="w-4 h-4 mr-2" /> API Key
-        </button>
+      {/* Auth Method Toggle */}
+      <div style={{
+        display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '0.625rem',
+        padding: '4px', marginBottom: '1.75rem', border: '1px solid var(--border)',
+      }}>
+        {(['jwt', 'apikey'] as const).map(m => (
+          <button
+            key={m}
+            onClick={() => setMethod(m)}
+            style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '0.4rem', padding: '0.5rem', borderRadius: '0.45rem',
+              border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+              transition: 'all 0.2s ease',
+              background: method === m ? 'rgba(99,102,241,0.2)' : 'transparent',
+              color: method === m ? 'var(--accent-bright)' : 'var(--text-secondary)',
+              boxShadow: method === m ? '0 0 0 1px rgba(99,102,241,0.3)' : 'none',
+            }}
+          >
+            {m === 'jwt' ? <UserSquare size={14} /> : <Key size={14} />}
+            {m === 'jwt' ? 'User Login' : 'API Key'}
+          </button>
+        ))}
       </div>
 
-      <form onSubmit={handleLogin} className="space-y-5">
+      {/* Form */}
+      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {method === 'jwt' ? (
           <>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-              <input type="email" required className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="admin@agency.com" />
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                Email Address
+              </label>
+              <input
+                type="email" required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="admin@agency.com"
+                className="input-dark"
+              />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
-              <input type="password" required className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" placeholder="••••••••" />
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="input-dark"
+                  style={{ paddingRight: '2.75rem' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(p => !p)}
+                  style={{
+                    position: 'absolute', right: '0.875rem', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
+                  }}
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
           </>
         ) : (
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">API Key</label>
-            <input type="password" required className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all font-mono text-sm" placeholder="sk_sasa_..." />
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+              API Key
+            </label>
+            <input
+              type="password"
+              required
+              value={apiKey}
+              onChange={e => setApiKey(e.target.value)}
+              placeholder="sk_sasa_live_..."
+              className="input-dark"
+              style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+            />
+            <p style={{ marginTop: '0.4rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+              Generate API keys from Dashboard → API Keys
+            </p>
           </div>
         )}
 
-        <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-lg shadow-indigo-200">
-          Sign In
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary"
+          style={{ width: '100%', marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.9rem' }}
+        >
+          {loading ? (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+              Signing in...
+            </span>
+          ) : (
+            <>Sign In <ArrowRight size={16} /></>
+          )}
         </button>
       </form>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
