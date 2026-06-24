@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Audit Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-print-color-adjust: exact;
+            background-color: white;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .brand-color {
+            color: {{BRAND_HEX}};
+        }
+        .bg-brand-color {
+            background-color: {{BRAND_HEX}};
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Cover Page -->
+    <div class="h-[297mm] w-[210mm] flex flex-col justify-between p-16 border-b-8" style="border-color: {{BRAND_HEX}}">
+        <header class="flex justify-between items-center">
+            {{LOGO_HTML}}
+            <div class="text-right">
+                <h2 class="text-xl font-bold">{{AGENCY_NAME}}</h2>
+                <p class="text-sm text-gray-500">Certified Security Audit</p>
+            </div>
+        </header>
+
+        <main class="flex-grow flex flex-col justify-center items-center text-center space-y-8">
+            <h1 class="text-5xl font-black tracking-tight">Security Assessment Report</h1>
+            <p class="text-xl text-gray-600">Target: <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{TARGET_URL}}</span></p>
+            
+            <div class="mt-12 p-8 rounded-full border-8 w-64 h-64 flex flex-col justify-center items-center shadow-lg" style="border-color: {{SCORE_COLOR}}">
+                <span class="text-sm font-semibold uppercase tracking-widest text-gray-500">Safety Score</span>
+                <span class="text-7xl font-black" style="color: {{SCORE_COLOR}}">{{SCORE}}</span>
+                <span class="text-sm font-medium mt-2">/ 100</span>
+            </div>
+        </main>
+
+        <footer class="text-center text-sm text-gray-400">
+            Generated on {{DATE}}
+        </footer>
+    </div>
+
+    <!-- Findings Page -->
+    <div class="page-break h-[297mm] w-[210mm] p-16">
+        <h2 class="text-3xl font-bold border-b pb-4 mb-8 brand-color">Vulnerability Findings</h2>
+        
+        <div class="space-y-6">
+            {{FINDINGS_HTML}}
+        </div>
+    </div>
+</body>
+</html>
